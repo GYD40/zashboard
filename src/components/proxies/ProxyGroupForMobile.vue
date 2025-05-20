@@ -21,24 +21,28 @@
       @transitionend="handlerTransitionEnd"
       ref="cardRef"
     >
-      <div class="flex h-20 shrink-0 flex-col gap-1 p-2">
-        <ProxyIcon
-          v-if="proxyGroup?.icon"
-          :icon="proxyGroup.icon"
-          size="small"
-          class="absolute top-2 right-2 z-[-1] h-10 w-10!"
-        />
-        <div class="text-md truncate">
-          {{ proxyGroup.name }}
-        </div>
-        <div class="text-base-content/80 flex gap-1 truncate text-xs">
-          <ProxyGroupNow
-            :name="proxyGroup.name"
-            :mobile="true"
+      <div class="flex h-20 flex-col p-2">
+        <div class="flex flex-1 gap-2">
+          <div class="flex flex-1 flex-col gap-0.5 overflow-hidden">
+            <div class="text-md truncate">
+              {{ proxyGroup.name }}
+            </div>
+            <div class="text-base-content/80 flex items-center gap-1 truncate">
+              <ProxyGroupNow
+                :name="proxyGroup.name"
+                :mobile="true"
+              />
+            </div>
+          </div>
+          <ProxyIcon
+            v-if="proxyGroup?.icon"
+            :icon="proxyGroup.icon"
+            size="small"
+            class="h-10 w-10! shrink-0"
           />
         </div>
 
-        <div class="flex h-4 items-center justify-between gap-1">
+        <div class="flex h-3 items-center">
           <div class="flex flex-1 items-center gap-1 truncate">
             <span class="text-base-content/60 shrink-0 text-xs">
               {{ proxyGroup.type }} ({{ proxiesCount }})
