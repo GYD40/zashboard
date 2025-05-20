@@ -78,7 +78,7 @@
           :name="name"
           :now="proxyGroup.now"
           :render-proxies="renderProxies"
-          :show-full-content="true"
+          :show-full-content="showAllContent"
           style="max-height: unset !important"
         />
       </div>
@@ -111,7 +111,7 @@ const isLatencyTesting = ref(false)
 
 const activeMode = ref(false)
 const modalMode = ref(activeMode.value)
-const diplayAllContent = ref(activeMode.value)
+const showAllContent = ref(activeMode.value)
 
 const cardWrapperRef = ref()
 const cardRef = ref()
@@ -139,6 +139,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const transitionEndCallback = ref<() => void>(() => {})
 const handlerTransitionEnd = () => {
   transitionEndCallback.value()
+  showAllContent.value = modalMode.value
 }
 
 const handlerGroupClick = async () => {
@@ -149,7 +150,6 @@ const handlerGroupClick = async () => {
   const topBottomValue = topBottomKey === 'top' ? y : innerHeight - y - height
 
   transitionEndCallback.value = () => {}
-  diplayAllContent.value = false
   transitionAll.value = false
   cardPosition.value = {
     [leftRightKey]: '0.5rem',
@@ -171,9 +171,6 @@ const handlerGroupClick = async () => {
     transitionAll.value = true
     cardPosition.value[topBottomKey] = Math.max(topBottomValue, innerHeight * 0.15) + 'px'
     modalMode.value = true
-    transitionEndCallback.value = () => {
-      diplayAllContent.value = true
-    }
   }
 }
 

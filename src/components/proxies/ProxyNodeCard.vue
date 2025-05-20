@@ -3,9 +3,9 @@
     ref="cardRef"
     :class="
       twMerge(
-        'bg-base-200 flex cursor-pointer flex-col items-start gap-1 rounded-md',
-        active ? 'bg-primary text-primary-content' : 'sm:hover:bg-base-300',
-        isSmallCard ? 'p-1' : 'p-2',
+        'bg-base-200 flex cursor-pointer flex-col items-start rounded-md',
+        active ? 'bg-primary text-primary-content sm:hover:bg-primary/95' : 'sm:hover:bg-base-300',
+        isSmallCard ? 'gap-1 p-1' : 'gap-2 p-2',
       )
     "
     @contextmenu.stop.prevent="handlerLatencyTest"
@@ -34,7 +34,7 @@
         {{ typeDescription }}
       </span>
       <LatencyTag
-        :class="[isSmallCard && 'h-4! w-8!', 'shrink-0']"
+        :class="[isSmallCard && 'h-4! w-8! rounded-md!', 'shrink-0']"
         :name="node.name"
         :loading="isLatencyTesting"
         :group-name="groupName"
