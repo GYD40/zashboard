@@ -2,6 +2,15 @@
 
 # Changelog
 
+## [1.89.1](https://github.com/Zephyruso/zashboard/compare/v1.89.0...v1.89.1) (2025-05-21)
+
+
+### Bug Fixes
+
+* animation performance for proxy group mobile ([81c363f](https://github.com/Zephyruso/zashboard/commit/81c363f7a8bd163ea51ddba9dc1447c328aad5dc))
+* lazy load ([7138a6f](https://github.com/Zephyruso/zashboard/commit/7138a6f234249c91fe3cde763488be1b1c325485))
+* proxy group mobile truncate ([6c53362](https://github.com/Zephyruso/zashboard/commit/6c533628b7b0db8641c2476a5ccca2102ad57ede))
+
 ## [1.89.0](https://github.com/Zephyruso/zashboard/compare/v1.88.0...v1.89.0) (2025-05-20)
 
 
