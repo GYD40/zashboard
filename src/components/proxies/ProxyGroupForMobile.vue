@@ -5,18 +5,13 @@
     @click="handlerGroupClick"
   >
     <div
-      v-if="activeMode"
-      class="fixed inset-0 z-40 transition-all duration-200"
-      :class="modalMode && 'bg-black/30'"
+      v-if="modalMode"
+      class="fixed inset-0 z-40 bg-black/30 transition-all duration-300"
     ></div>
     <div
-      class="card overflow-hidden will-change-[height,width,transform]"
-      :class="[
-        activeMode ? `fixed z-50` : 'absolute top-0 left-0 h-auto w-full',
-        transitionAll && 'transition-all duration-200',
-        blurIntensity < 5 && 'backdrop-blur-sm!',
-      ]"
-      :style="activeMode && [cardPosition, cardSize]"
+      class="card absolute overflow-hidden transition-[height,width,left,top,right,bottom] duration-200 will-change-[height,width,transform]"
+      :class="blurIntensity < 5 && 'backdrop-blur-sm!'"
+      :style="cardStyle"
       @contextmenu.prevent.stop="handlerLatencyTest"
       @transitionend="handlerTransitionEnd"
       ref="cardRef"
@@ -113,69 +108,83 @@ const allProxies = computed(() => proxyGroup.value.all ?? [])
 const { proxiesCount, renderProxies } = useRenderProxies(allProxies, props.name)
 const isLatencyTesting = ref(false)
 
-const activeMode = ref(false)
-const modalMode = ref(activeMode.value)
-const showAllContent = ref(activeMode.value)
+const modalMode = ref(false)
+const showAllContent = ref(modalMode.value)
 
 const cardWrapperRef = ref()
 const cardRef = ref()
 
-const initWidth = ref(0)
-const initHeight = ref(0)
-const transitionAll = ref(false)
+const INIT_STYLE = {
+  width: '100%',
+  height: '100%',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 10,
+}
+const cardStyle = ref<Record<string, string | number>>({
+  ...INIT_STYLE,
+})
+const calcCardStyle = () => {
+  if (!cardWrapperRef.value) return
+  if (!modalMode.value) {
+    const style: Record<string, string | number> = {
+      width: '100%',
+      height: '100%',
+      zIndex: 50,
+    }
 
-const cardPosition = ref<Record<string, string>>({})
-const cardSize = computed(() => {
-  if (modalMode.value) {
-    return {
-      width: 'calc(100vw - 1rem)',
-      maxHeight: `calc(100vh - ${cardPosition.value.bottom || cardPosition.value.top} - 4rem)`,
+    ;['top', 'left', 'right', 'bottom'].forEach((key) => {
+      if (Reflect.has(cardStyle.value, key)) {
+        style[key] = 0
+      }
+    })
+
+    cardStyle.value = style
+    return
+  }
+
+  const { x, y, height, bottom, top } = cardWrapperRef.value.getBoundingClientRect()
+  const { innerHeight, innerWidth } = window
+  const safeArea = innerHeight * 0.15
+  const leftRightKey = x < innerWidth / 3 ? 'left' : 'right'
+  const topBottomKey = y + height / 2 < innerHeight / 2 ? 'top' : 'bottom'
+
+  const verticalOffset = topBottomKey === 'top' ? top : innerHeight - bottom
+  let topBottomValue = 0
+
+  if (topBottomKey === 'top') {
+    if (y < safeArea) {
+      topBottomValue = safeArea - y
+    }
+  } else {
+    if (y + height > innerHeight - safeArea) {
+      topBottomValue = y + height - (innerHeight - safeArea)
     }
   }
-  return {
-    width: initWidth.value + 'px',
-    height: initHeight.value + 'px',
+
+  cardStyle.value = {
+    width: 'calc(100vw - 1rem)',
+    maxHeight: `calc(100vh - ${Math.max(safeArea, verticalOffset)}px - 6rem)`,
+    [leftRightKey]: 0,
+    [topBottomKey]: topBottomValue + 'px',
+    zIndex: 50,
   }
-})
+}
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const transitionEndCallback = ref<() => void>(() => {})
 const handlerTransitionEnd = () => {
-  transitionEndCallback.value()
   showAllContent.value = modalMode.value
+  if (!modalMode.value) {
+    cardStyle.value = {
+      ...INIT_STYLE,
+    }
+  }
 }
 
 const handlerGroupClick = async () => {
-  const { innerHeight, innerWidth } = window
-  const { x, y, width, height } = cardWrapperRef.value.getBoundingClientRect()
-  const leftRightKey = x < innerWidth / 3 ? 'left' : 'right'
-  const topBottomKey = y < innerHeight / 2 ? 'top' : 'bottom'
-  const topBottomValue = topBottomKey === 'top' ? y : innerHeight - y - height
-
-  transitionEndCallback.value = () => {}
-  transitionAll.value = false
-  cardPosition.value = {
-    [leftRightKey]: '0.5rem',
-    [topBottomKey]: topBottomValue + 'px',
-  }
-
-  if (activeMode.value) {
-    transitionAll.value = true
-    modalMode.value = false
-    transitionEndCallback.value = () => {
-      transitionAll.value = false
-      activeMode.value = false
-    }
-  } else {
-    initWidth.value = width
-    initHeight.value = height
-    activeMode.value = true
-    await sleep(50)
-    transitionAll.value = true
-    cardPosition.value[topBottomKey] = Math.max(topBottomValue, innerHeight * 0.15) + 'px'
-    modalMode.value = true
-  }
+  modalMode.value = !modalMode.value
+  calcCardStyle()
 }
 
 const handlerLatencyTest = async () => {
